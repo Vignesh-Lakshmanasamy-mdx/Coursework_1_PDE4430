@@ -14,7 +14,6 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(640, 480)
-        
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(10, 440, 621, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -37,9 +36,12 @@ class Ui_Dialog(object):
         self.Vel_control.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.Vel_control.setTickInterval(1)
         self.Vel_control.setObjectName("Vel_control")
-        self.dial = QtWidgets.QDial(Dialog)
-        self.dial.setGeometry(QtCore.QRect(110, 160, 171, 191))
-        self.dial.setObjectName("dial")
+        self.direction_control = QtWidgets.QDial(Dialog)
+        self.direction_control.setGeometry(QtCore.QRect(110, 160, 171, 191))
+        self.direction_control.setMaximum(180)
+        self.direction_control.setProperty("value", 0)
+        self.direction_control.setInvertedAppearance(True)
+        self.direction_control.setObjectName("direction_control")
         self.textBrowser_2 = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser_2.setGeometry(QtCore.QRect(40, 340, 141, 31))
         self.textBrowser_2.setObjectName("textBrowser_2")
