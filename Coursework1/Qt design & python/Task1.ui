@@ -217,14 +217,13 @@ p, li { white-space: pre-wrap; }
    <property name="font">
     <font>
      <family>Ubuntu Condensed</family>
-     <pointsize>17</pointsize>
-     <weight>9</weight>
-     <italic>false</italic>
-     <bold>false</bold>
+     <pointsize>20</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: 75 17pt &quot;Ubuntu Condensed&quot;;</string>
+    <string notr="true"/>
    </property>
   </widget>
   <widget class="QTextBrowser" name="textBrowser_3">
