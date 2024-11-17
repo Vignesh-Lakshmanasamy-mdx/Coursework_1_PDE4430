@@ -9,6 +9,9 @@ x_value=0
 y_value=0
 deg=0
 cmd_vel_controller=1.0
+state=0
+radian_value=0
+stop_button=0
 
 
 def posecallback(pose_message):
@@ -35,12 +38,42 @@ def main():
     rospy.spin()
 
 def forward():
-
+    global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button
     twist=Twist()
-    global x_value,y_value,deg,cmd_vel_controller
-    twist.linear.x=cmd_vel_controller
+    stop_button=0
+    if state==0:
+        twist.linear.x=cmd_vel_controller
+        cmd_vel_pub.publish(twist)
+    else:
+        rate=rospy.Rate(10)
+        while not rospy.is_shutdown():
+
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula - took from google
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+
+            if abs(theta_diff)>0.1:
+                twist.linear.x=cmd_vel_controller
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
+            
+            if stop_button==1:
+                    twist.linear.x=0.0
+                    twist.angular.z=0.0
+                    cmd_vel_pub.publish(twist)
+                    break
+                
+            rate.sleep()
+
+def stop():
+    global stop_button
+    stop_button=1
+    print(stop_button)
+    twist = Twist()
+    twist.linear.x = 0.0 
+    twist.angular.z = 0.0 
     cmd_vel_pub.publish(twist)
-   
 
 def reverse():
 
@@ -50,6 +83,7 @@ def reverse():
     cmd_vel_pub.publish(twist)
 
 def change_angle(value):
+    global radian_value
     deg_value=int(value)
     radian_value=deg_value*0.0174533
     twist=Twist()
@@ -57,9 +91,7 @@ def change_angle(value):
     #print(radian_value)
     
     rate=rospy.Rate(10)
-    
 
-    
     while not rospy.is_shutdown():
 
         #calculating difference in the current and expected theta value
@@ -84,6 +116,7 @@ def change_speed(value):
     cmd_vel_controller=float(value)
 
 def fun_checkbox(value):
+    global state
     state=value
     print(state)
 
@@ -124,7 +157,7 @@ class Ui_Dialog(object):
         self.Vel_control = QtWidgets.QSlider(Dialog)
         self.Vel_control.setGeometry(QtCore.QRect(490, 150, 51, 221))
         self.Vel_control.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
-        self.Vel_control.setMaximum(10)
+        self.Vel_control.setMaximum(5)
         self.Vel_control.setMinimum(1)
         self.Vel_control.setOrientation(QtCore.Qt.Vertical)
         self.Vel_control.setTickPosition(QtWidgets.QSlider.TicksBelow)
@@ -133,7 +166,7 @@ class Ui_Dialog(object):
 
         self.direction_control = QtWidgets.QDial(Dialog)
         self.direction_control.setGeometry(QtCore.QRect(40, 170, 171, 191))
-        self.direction_control.setMaximum(180)
+        self.direction_control.setMaximum(360)
         self.direction_control.setProperty("value", 0)
         self.direction_control.setInvertedAppearance(True)
         self.direction_control.setObjectName("direction_control")
@@ -212,7 +245,7 @@ class Ui_Dialog(object):
         self.Vel_control.valueChanged.connect(change_speed)
         self.Vel_control.valueChanged.connect(self.dis_speed)
         self.checkBox.stateChanged.connect(fun_checkbox)
-        
+        self.pushButton_3.clicked.connect(stop)
     def dis_speed(self,value):
         self.lcdNumber_2.display(value)
 
