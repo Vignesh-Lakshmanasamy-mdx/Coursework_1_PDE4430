@@ -1,0 +1,5 @@
+<launch>
+<node pkg="turtlesim" type="turtlesim_node" name="Turtlesim"/>
+<node pkg="Coursework1" type="teleoperation_qt.py" name="Teleoperation_Node"/>
+<node pkg="rqt_graph" type="rqt_graph" name="Graph"/>
+</launch>

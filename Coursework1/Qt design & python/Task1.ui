@@ -214,6 +214,18 @@ p, li { white-space: pre-wrap; }
      <height>41</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Ubuntu Condensed</family>
+     <pointsize>17</pointsize>
+     <weight>9</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 75 17pt &quot;Ubuntu Condensed&quot;;</string>
+   </property>
   </widget>
   <widget class="QTextBrowser" name="textBrowser_3">
    <property name="geometry">
@@ -258,8 +270,8 @@ p, li { white-space: pre-wrap; }
     </rect>
    </property>
   </widget>
-  <zorder>textBrowser_3</zorder>
   <zorder>textEdit_2</zorder>
+  <zorder>textBrowser_3</zorder>
   <zorder>buttonBox</zorder>
   <zorder>pushButton</zorder>
   <zorder>pushButton_2</zorder>
