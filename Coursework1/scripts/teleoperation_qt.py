@@ -4,6 +4,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import sys
+from std_srvs.srv import Empty
 
 x_value=0
 y_value=0
@@ -12,7 +13,8 @@ cmd_vel_controller=1.0
 state=0
 radian_value=0
 stop_button=0
-
+forward_value=0
+reverse_value=0
 
 def posecallback(pose_message):
     global x_value,y_value,deg
@@ -38,34 +40,16 @@ def main():
     rospy.spin()
 
 def forward():
-    global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button
+    global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button,forward_value,reverse_value
     twist=Twist()
-    stop_button=0
+    
     if state==0:
         twist.linear.x=cmd_vel_controller
         cmd_vel_pub.publish(twist)
     else:
-        rate=rospy.Rate(10)
-        while not rospy.is_shutdown():
-
-            #calculating difference in the current and expected theta value
-            theta_diff=radian_value-deg
-            #normalization of theta formula - took from google
-            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
-
-            if abs(theta_diff)>0.1:
-                twist.linear.x=cmd_vel_controller
-                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
-                cmd_vel_pub.publish(twist)
-            
-            if stop_button==1:
-                    twist.linear.x=0.0
-                    twist.angular.z=0.0
-                    cmd_vel_pub.publish(twist)
-                    break
-                
-            rate.sleep()
-
+        forward_value=1
+        reverse_value=0
+        
 def stop():
     global stop_button
     stop_button=1
@@ -78,37 +62,81 @@ def stop():
 def reverse():
 
     twist=Twist()
-    global x_value,y_value,deg,cmd_vel_controller
-    twist.linear.x=-(cmd_vel_controller)
-    cmd_vel_pub.publish(twist)
+    global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button,forward_value,reverse_value
+    if state==0:
+        twist.linear.x=-(cmd_vel_controller)
+        cmd_vel_pub.publish(twist)
+    else:
+        forward_value=0
+        reverse_value=1
 
 def change_angle(value):
-    global radian_value
+    global radian_value,cmd_vel_controller,forward_value
     deg_value=int(value)
     radian_value=deg_value*0.0174533
     twist=Twist()
     global deg
     #print(radian_value)
-    
-    rate=rospy.Rate(10)
+    if state==0:
+        rate=rospy.Rate(10)
 
-    while not rospy.is_shutdown():
+        while not rospy.is_shutdown():
 
-        #calculating difference in the current and expected theta value
-        theta_diff=radian_value-deg
-        #normalization of theta formula - took from google
-        theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula - took from google
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
 
-        if abs(theta_diff)>0.1:
-            twist.angular.z=0.5432*theta_diff/abs(theta_diff)
-            cmd_vel_pub.publish(twist)
+            if abs(theta_diff)>0.1: 
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
         
-        else:
+            else:
+                twist.angular.z=0.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
+    elif state!=0 and forward_value==1 and stop_button==0 :
+        
+        rate=rospy.Rate(10)
+        while stop_button==0:
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula - took from google
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+
+            if abs(theta_diff)>0.1:
+                twist.linear.x=cmd_vel_controller 
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
             
-            twist.angular.z=0.0
-            cmd_vel_pub.publish(twist)
-            break
-        rate.sleep()
+            else:
+                twist.linear.x=cmd_vel_controller
+                twist.angular.z=0.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
+
+    elif state!=0 and reverse_value==1 and stop_button==0 :        
+        
+        rate=rospy.Rate(10)
+        while stop_button==0:
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula - took from google
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+
+            if abs(theta_diff)>0.1:
+                twist.linear.x=-(cmd_vel_controller)
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
+            
+            else:
+                twist.linear.x=-(cmd_vel_controller)
+                twist.angular.z=0.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
 
 def change_speed(value):
     
@@ -120,6 +148,11 @@ def fun_checkbox(value):
     state=value
     print(state)
 
+def func_reset():
+        rospy.wait_for_service('reset')
+        reset_turtle = rospy.ServiceProxy('reset', Empty)
+        reset_turtle()
+        
 
 # Form implementation generated from reading ui file 'Task1.ui'
 #
@@ -206,17 +239,17 @@ class Ui_Dialog(object):
         self.lcdNumber_2 = QtWidgets.QLCDNumber(Dialog)
         self.lcdNumber_2.setGeometry(QtCore.QRect(560, 340, 64, 23))
         self.lcdNumber_2.setObjectName("lcdNumber_2")
-
+        """
         self.checkBox_2 = QtWidgets.QCheckBox(Dialog)
         self.checkBox_2.setGeometry(QtCore.QRect(280, 360, 151, 23))
         self.checkBox_2.setObjectName("checkBox_2")
-
+        
         self.textEdit_2 = QtWidgets.QTextEdit(Dialog)
         self.textEdit_2.setGeometry(QtCore.QRect(270, 350, 181, 41))
         self.textEdit_2.setObjectName("textEdit_2")
-        
+        """
         self.textBrowser_3.raise_()
-        self.textEdit_2.raise_()
+        #self.textEdit_2.raise_()
         self.buttonBox.raise_()
         self.pushButton.raise_()
         self.pushButton_2.raise_()
@@ -231,7 +264,7 @@ class Ui_Dialog(object):
         self.textBrowser_4.raise_()
         self.lcdNumberDegree.raise_()
         self.lcdNumber_2.raise_()
-        self.checkBox_2.raise_()
+        #self.checkBox_2.raise_()
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -246,6 +279,7 @@ class Ui_Dialog(object):
         self.Vel_control.valueChanged.connect(self.dis_speed)
         self.checkBox.stateChanged.connect(fun_checkbox)
         self.pushButton_3.clicked.connect(stop)
+        self.pushButton_4.clicked.connect(func_reset)
     def dis_speed(self,value):
         self.lcdNumber_2.display(value)
 
@@ -275,13 +309,14 @@ class Ui_Dialog(object):
         self.checkBox.setText(_translate("Dialog", "Continuous motion"))
         self.pushButton_3.setText(_translate("Dialog", "Stop"))
         self.pushButton_4.setText(_translate("Dialog", "Reset Turtle Window"))
-        self.textBrowser_4.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        """
+        #self.textBrowser_4.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Speed control</p></body></html>"))
-        self.checkBox_2.setText(_translate("Dialog", "Wall Collision"))
-
+        #self.checkBox_2.setText(_translate("Dialog", "Wall Collision"))
+"""
 
 if __name__ == "__main__":
     main()
