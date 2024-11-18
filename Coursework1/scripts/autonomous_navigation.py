@@ -4,11 +4,23 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 from std_srvs.srv import Empty
+from turtlesim.srv import Kill,Spawn
 import sys
 
+def posecallback(pose_message):
+    global x_value,y_value,deg
+    x_value=pose_message.x
+    y_value=pose_message.y
+    deg=pose_message.theta 
 
 def main():
-   
+
+    rospy.init_node('Turtlesim_autonomous_navigation',anonymous=True)
+
+    global cmd_vel_pub
+    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
+
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
@@ -16,7 +28,32 @@ def main():
     Dialog.show()
     sys.exit(app.exec_())
 
+    rospy.spin()
 
+def kill():
+    rospy.wait_for_service('kill')
+    kill_turtle = rospy.ServiceProxy('kill', Kill)
+    kill_turtle("turtle1")
+
+def spawn(x,y,deg):
+    deg=deg*3.14/180
+    rospy.wait_for_service('spawn')
+    add_turtle = rospy.ServiceProxy('spawn', Spawn)
+    add_turtle(x,y,deg,"turtle1")
+
+def turtle_origin_points(x_origin,y_origin,theta_origin):
+    if x_origin<1 or x_origin>10:
+        x_origin=5.54
+    if y_origin<1 or y_origin>10:
+        y_origin=5.54
+    if theta_origin<0 or theta_origin>360:
+        theta_origin=0
+    print(x_origin,y_origin,theta_origin)
+    kill()
+    spawn(x_origin,y_origin,theta_origin)
+
+def turtle_target_points(x_target,y_target,theta_target):
+    print(x_target,y_target,theta_target)
 
 # Form implementation generated from reading ui file 'Task2.ui'
 #
@@ -151,6 +188,24 @@ class Ui_Dialog(object):
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+        self.move_to_target.clicked.connect(self.accept_values)
+    
+    def accept_values(self):
+        try :
+            x_origin=float(self.origin_x.toPlainText())
+            y_origin=float(self.Origin_y.toPlainText())
+            theta_origin=float(self.origin_theta.toPlainText())
+            
+            turtle_origin_points(x_origin,y_origin,theta_origin)
+
+            x_target=float(self.Target_x.toPlainText())
+            y_target=float(self.Target_y.toPlainText())
+            theta_target=float(self.Target_Theta.toPlainText())
+            
+            turtle_target_points(x_target,y_target,theta_target)
+        except:
+            print("Enter a Valid Data")
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
@@ -164,7 +219,7 @@ class Ui_Dialog(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.label.setText(_translate("Dialog", "X coordinate point"))
         self.label_2.setText(_translate("Dialog", "Y coordinate point"))
-        self.label_3.setText(_translate("Dialog", "Theta Value"))
+        self.label_3.setText(_translate("Dialog", "Theta Value (Deg.)"))
         self.textEdit_4.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
