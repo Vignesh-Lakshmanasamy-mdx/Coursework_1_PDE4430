@@ -5,7 +5,14 @@ from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn
-import sys
+import sys,math
+
+x_value=0
+y_value=0
+deg=0
+x_t=0
+y_t=0
+theta_t=0
 
 def posecallback(pose_message):
     global x_value,y_value,deg
@@ -53,7 +60,85 @@ def turtle_origin_points(x_origin,y_origin,theta_origin):
     spawn(x_origin,y_origin,theta_origin)
 
 def turtle_target_points(x_target,y_target,theta_target):
-    print(x_target,y_target,theta_target)
+    
+    global x_t,y_t,theta_t
+    if x_target<1 or x_target>10:
+        x_target=2
+    if y_target<1 or y_target>10:
+        y_target=2
+    if theta_target<0 or theta_target>360:
+        theta_target=0.0
+    
+    x_t=x_target
+    y_t=y_target
+    theta_t=theta_target
+
+def target_distance(x1,y1,x2,y2):
+    return math.sqrt((x2-x1)**2+(y2-y1)**2)
+
+def target_angle(x1,y1,x2,y2):
+    return math.atan2(y2-y1,x2-x1)
+
+def move_turtle():
+
+    global x_t,y_t,theta_t,x_value,y_value,deg
+    twist=Twist()
+    rate=rospy.Rate(10)
+    """
+    #triangle side 1
+    side1=abs(x_t-x_value)
+    side2=abs(y_t-y_value)
+    side3=math.sqrt(side1**2+side2**2)
+    angle=math.degrees(math.atan(side2/side1))
+    angle=angle*0.0174533
+    print(side3,angle)
+    """
+    
+    while not rospy.is_shutdown():
+        angle=target_angle(x_value,y_value,x_t,y_t)
+
+        theta_diff=angle-deg
+        theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+        
+        
+        if abs(theta_diff)>0.1:  
+            twist.angular.z=0.5*theta_diff/abs(theta_diff)
+            twist.linear.x=0.0
+            cmd_vel_pub.publish(twist)
+        else:
+            twist.angular.z=0.0
+
+            distance=target_distance(x_value,y_value,x_t,y_t)
+            if distance>0.1:
+                twist.linear.x=3.0
+                cmd_vel_pub.publish(twist)
+            else:
+                twist.linear.x=0.0
+                cmd_vel_pub.publish(twist)
+                break
+        rate.sleep()
+    
+
+    angle_on_reach_point=theta_t*0.01744
+    theta_diff=angle_on_reach_point-deg
+    theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+
+    while abs(theta_diff)>0.1:
+        twist.angular.z=0.5*theta_diff/abs(theta_diff)
+        cmd_vel_pub.publish(twist)
+        theta_diff=(theta_t*0.01744)-deg
+        theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+        rate.sleep()
+    
+    twist.angular.z=0.0
+    cmd_vel_pub.publish(twist)
+
+    print(x_value,y_value,(deg*180/3.14))
+
+def turtle_reset():
+    rospy.wait_for_service('reset')
+    reset_turtle = rospy.ServiceProxy('reset', Empty)
+    reset_turtle()
 
 # Form implementation generated from reading ui file 'Task2.ui'
 #
@@ -189,7 +274,7 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         self.move_to_target.clicked.connect(self.accept_values)
-    
+        self.Rest_turtle.clicked.connect(turtle_reset)
     def accept_values(self):
         try :
             x_origin=float(self.origin_x.toPlainText())
@@ -197,12 +282,13 @@ class Ui_Dialog(object):
             theta_origin=float(self.origin_theta.toPlainText())
             
             turtle_origin_points(x_origin,y_origin,theta_origin)
-
+            
             x_target=float(self.Target_x.toPlainText())
             y_target=float(self.Target_y.toPlainText())
             theta_target=float(self.Target_Theta.toPlainText())
             
             turtle_target_points(x_target,y_target,theta_target)
+            move_turtle()
         except:
             print("Enter a Valid Data")
 
@@ -270,4 +356,5 @@ class Ui_Dialog(object):
 
 
 if __name__ == "__main__":
+    
     main()
