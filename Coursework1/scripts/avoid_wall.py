@@ -1,13 +1,137 @@
-
-
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
-
-
-
-
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import rospy
+from geometry_msgs.msg import Twist
+from turtlesim.msg import Pose
+from PyQt5 import QtCore, QtGui, QtWidgets
+import sys,math
+from std_srvs.srv import Empty
+
+x_value=0
+y_value=0
+deg=0
+cmd_vel_controller=1.0
+index=0
+
+def posecallback(pose_message):
+    global x_value,y_value,deg
+    x_value=pose_message.x
+    y_value=pose_message.y
+    deg=pose_message.theta 
+
+
+def main():
+
+    rospy.init_node('Turtlesim_Avoid_wall_collision',anonymous=True)
+
+    global cmd_vel_pub
+    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
+
+
+    app = QtWidgets.QApplication(sys.argv)
+    Dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(Dialog)
+    Dialog.show()
+    sys.exit(app.exec_())
+
+    rospy.spin()
+
+
+
+
+def forward():
+    global x_value,y_value,deg,cmd_vel_controller,index
+    twist=Twist()
+    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
+        twist.linear.x=cmd_vel_controller
+        cmd_vel_pub.publish(twist)
+    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
+        change_angle(0)
+
+def reverse():
+
+    twist=Twist()
+    global x_value,y_value,deg,cmd_vel_controller
+
+    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
+        twist.linear.x=-(cmd_vel_controller)
+        cmd_vel_pub.publish(twist)
+    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
+        change_angle(0)
+    
+def change_angle(value):
+    global radian_value,cmd_vel_controller,x_value,y_value,deg,index
+    deg_value=int(value)
+    radian_value=deg_value*0.0174533
+    twist=Twist()
+    global deg
+    #print(radian_value)
+
+    rate=rospy.Rate(10)
+    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
+        while not rospy.is_shutdown():
+
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula 
+            theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+
+            if abs(theta_diff)>0.1: 
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
+        
+            else:
+                twist.angular.z=0.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
+    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
+        if x_value<1.5:
+            radian_value=0
+        elif x_value>9.5:
+            radian_value= (180*0.0174533)
+        elif y_value>9.5:
+            radian_value= (270*0.0174533)
+        elif y_value<1.5:
+            radian_value=(90*0.0174533)
+
+        while not rospy.is_shutdown():
+
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula 
+            theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+
+            if abs(theta_diff)>0.1: 
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
+        
+            else:
+                twist.angular.z=0.0
+                twist.linear.x=1.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
+def change_speed(value):
+    
+    global cmd_vel_controller
+    cmd_vel_controller=float(value)
+
+
+def func_reset():
+    rospy.wait_for_service('reset')
+    reset_turtle = rospy.ServiceProxy('reset', Empty)
+    reset_turtle()
+
+def by_rotation():
+    global index
+    index=0
+    
+def by_uturn():
+    global index
+    index=1
 
 # Form implementation generated from reading ui file 'Task3.ui'
 #
@@ -42,7 +166,8 @@ class Ui_Dialog(object):
         self.Vel_control.setGeometry(QtCore.QRect(510, 150, 51, 221))
         self.Vel_control.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
         self.Vel_control.setMaximum(6)
-        self.Vel_control.setProperty("value", 0)
+        self.Vel_control.setMinimum(1)
+        self.Vel_control.setProperty("value", 1)
         self.Vel_control.setOrientation(QtCore.Qt.Vertical)
         self.Vel_control.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.Vel_control.setTickInterval(1)
@@ -50,7 +175,7 @@ class Ui_Dialog(object):
 
         self.direction_control = QtWidgets.QDial(Dialog)
         self.direction_control.setGeometry(QtCore.QRect(40, 170, 171, 191))
-        self.direction_control.setMaximum(180)
+        self.direction_control.setMaximum(360)
         self.direction_control.setProperty("value", 0)
         self.direction_control.setInvertedAppearance(True)
         self.direction_control.setObjectName("direction_control")
@@ -93,8 +218,8 @@ class Ui_Dialog(object):
         self.comboBox = QtWidgets.QComboBox(Dialog)
         self.comboBox.setGeometry(QtCore.QRect(240, 270, 231, 25))
         self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
+        self.comboBox.addItem("Avoid by Rotation")
+        self.comboBox.addItem("Avoid by uturn")
         
         self.textEdit_2.raise_()
         self.textBrowser_3.raise_()
@@ -115,6 +240,32 @@ class Ui_Dialog(object):
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        self.pushButton.clicked.connect(forward)
+        self.pushButton_2.clicked.connect(reverse)
+        self.direction_control.valueChanged.connect(change_angle)
+        self.direction_control.valueChanged.connect(self.dis_angle)
+        self.Vel_control.valueChanged.connect(change_speed)
+        self.Vel_control.valueChanged.connect(self.dis_speed)
+        self.pushButton_4.clicked.connect(func_reset)
+        
+        self.comboBox.currentIndexChanged.connect(self.method_selection)
+
+    def dis_speed(self,value):
+        if value==0:
+            self.lcdNumber_2.display(value+1)
+        else:
+            self.lcdNumber_2.display(value)
+
+    def dis_angle(self,value):
+        self.lcdNumberDegree.display(value)
+    
+    def method_selection(self,index):
+        if index==0:
+            by_rotation()
+        elif index==1:
+            by_uturn()
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -153,10 +304,4 @@ class Ui_Dialog(object):
 
 
 if __name__ == "__main__":
-    
-    app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
+    main()    

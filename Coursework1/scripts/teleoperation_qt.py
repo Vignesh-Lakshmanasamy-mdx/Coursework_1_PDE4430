@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import sys
 from std_srvs.srv import Empty
-
+import math
 x_value=0
 y_value=0
 deg=0
@@ -84,8 +84,8 @@ def change_angle(value):
 
             #calculating difference in the current and expected theta value
             theta_diff=radian_value-deg
-            #normalization of theta formula - took from google
-            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+            #normalization of theta formula 
+            theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
 
             if abs(theta_diff)>0.1: 
                 twist.angular.z=0.5432*theta_diff/abs(theta_diff)
@@ -280,6 +280,7 @@ class Ui_Dialog(object):
         self.checkBox.stateChanged.connect(fun_checkbox)
         self.pushButton_3.clicked.connect(stop)
         self.pushButton_4.clicked.connect(func_reset)
+
     def dis_speed(self,value):
         self.lcdNumber_2.display(value)
 
