@@ -259,6 +259,10 @@ class Ui_Dialog(object):
         self.textBrowser = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser.setGeometry(QtCore.QRect(40, 135, 561, 31))
         self.textBrowser.setObjectName("textBrowser")
+
+        self.turtle_spawn = QtWidgets.QPushButton(Dialog)
+        self.turtle_spawn.setGeometry(QtCore.QRect(30, 380, 171, 25))
+        self.turtle_spawn.setObjectName("Spawn_new_turtle")        
         
         self.move_to_target = QtWidgets.QPushButton(Dialog)
         self.move_to_target.setGeometry(QtCore.QRect(220, 380, 171, 25))
@@ -273,7 +277,8 @@ class Ui_Dialog(object):
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-        self.move_to_target.clicked.connect(self.accept_values)
+        self.turtle_spawn.clicked.connect(self.accept_values)
+        self.move_to_target.clicked.connect(self.Turtle_target_motion)
         self.Rest_turtle.clicked.connect(turtle_reset)
     def accept_values(self):
         try :
@@ -288,9 +293,14 @@ class Ui_Dialog(object):
             theta_target=float(self.Target_Theta.toPlainText())
             
             turtle_target_points(x_target,y_target,theta_target)
-            move_turtle()
         except:
             print("Enter a Valid Data")
+
+    def Turtle_target_motion(self):
+        try:
+            move_turtle()
+        except:
+            print("invalid operation")
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -353,7 +363,7 @@ class Ui_Dialog(object):
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Enter X &amp; Y coordinate value Between 1 &amp; 10</p></body></html>"))
         self.move_to_target.setText(_translate("Dialog", "Move to Target"))
         self.Rest_turtle.setText(_translate("Dialog", "Reset Turtle Window"))
-
+        self.turtle_spawn.setText(_translate("Dialog", "Spawn"))
 
 if __name__ == "__main__":
     

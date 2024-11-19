@@ -119,7 +119,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Theta Value</string>
+    <string>Theta Value (Deg.)</string>
    </property>
   </widget>
   <widget class="QTextEdit" name="textEdit_4">
