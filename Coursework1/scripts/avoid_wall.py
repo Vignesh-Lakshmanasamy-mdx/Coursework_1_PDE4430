@@ -44,22 +44,42 @@ def main():
 def forward():
     global x_value,y_value,deg,cmd_vel_controller,index
     twist=Twist()
-    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
+    
+    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8):
         twist.linear.x=cmd_vel_controller
         cmd_vel_pub.publish(twist)
-    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
-        change_angle(0)
+    else:
+        if index==0:
+            change_angle(0)
+        else:
+            while True:
+                for pulse in range(32):
+                    twist.angular.z=1.0
+                    twist.linear.x=1.0
+                    cmd_vel_pub.publish(twist)
+                    rospy.sleep(0.1)
+                
+                twist.angular.z=0
+                twist.linear.x=4.0
+                cmd_vel_pub.publish(twist)
+                break
+            rospy.sleep(1)
+def stop_the_turtle():
+    twist=Twist()
+    twist.linear.x=0
+    cmd_vel_pub.publish(twist)
 
 def reverse():
 
     twist=Twist()
     global x_value,y_value,deg,cmd_vel_controller
 
-    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
+    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8):
         twist.linear.x=-(cmd_vel_controller)
         cmd_vel_pub.publish(twist)
-    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
-        change_angle(0)
+    else:
+        if index==0:
+            change_angle(0)
     
 def change_angle(value):
     global radian_value,cmd_vel_controller,x_value,y_value,deg,index
@@ -70,31 +90,15 @@ def change_angle(value):
     #print(radian_value)
 
     rate=rospy.Rate(10)
-    if (x_value>=1 and x_value<=10) and (y_value>=1 and y_value<=10):
-        while not rospy.is_shutdown():
-
-            #calculating difference in the current and expected theta value
-            theta_diff=radian_value-deg
-            #normalization of theta formula 
-            theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
-
-            if abs(theta_diff)>0.1: 
-                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
-                cmd_vel_pub.publish(twist)
-        
-            else:
-                twist.angular.z=0.0
-                cmd_vel_pub.publish(twist)
-                break
-            rate.sleep()
-    elif (x_value<1.5 or x_value>9.5 or y_value<1.5 or y_value>9.5) and index==0:
-        if x_value<1.5:
+    
+    if index==0:
+        if x_value<3:
             radian_value=0
-        elif x_value>9.5:
+        elif x_value>8:
             radian_value= (180*0.0174533)
-        elif y_value>9.5:
+        elif y_value>8:
             radian_value= (270*0.0174533)
-        elif y_value<1.5:
+        elif y_value<3:
             radian_value=(90*0.0174533)
 
         while not rospy.is_shutdown():
@@ -102,7 +106,7 @@ def change_angle(value):
             #calculating difference in the current and expected theta value
             theta_diff=radian_value-deg
             #normalization of theta formula 
-            theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
 
             if abs(theta_diff)>0.1: 
                 twist.angular.z=0.5432*theta_diff/abs(theta_diff)
@@ -110,10 +114,30 @@ def change_angle(value):
         
             else:
                 twist.angular.z=0.0
-                twist.linear.x=1.0
+                twist.linear.x=3.0
                 cmd_vel_pub.publish(twist)
                 break
             rate.sleep()
+
+    else:
+        while not rospy.is_shutdown():
+
+            #calculating difference in the current and expected theta value
+            theta_diff=radian_value-deg
+            #normalization of theta formula 
+            theta_diff=(theta_diff+3.14)%(2*3.14)-3.14
+
+            if abs(theta_diff)>0.1: 
+                twist.angular.z=0.5432*theta_diff/abs(theta_diff)
+                cmd_vel_pub.publish(twist)
+        
+            else:
+                twist.angular.z=0.0
+                cmd_vel_pub.publish(twist)
+                break
+            rate.sleep()
+         
+
 def change_speed(value):
     
     global cmd_vel_controller
@@ -165,7 +189,7 @@ class Ui_Dialog(object):
         self.Vel_control = QtWidgets.QSlider(Dialog)
         self.Vel_control.setGeometry(QtCore.QRect(510, 150, 51, 221))
         self.Vel_control.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
-        self.Vel_control.setMaximum(6)
+        self.Vel_control.setMaximum(2)
         self.Vel_control.setMinimum(1)
         self.Vel_control.setProperty("value", 1)
         self.Vel_control.setOrientation(QtCore.Qt.Vertical)
@@ -190,7 +214,7 @@ class Ui_Dialog(object):
 
         self.textBrowser_4 = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser_4.setGeometry(QtCore.QRect(490, 380, 141, 31))
-        self.textBrowser_4.setObjectName("textBrowser_4")
+        self.textBrowser_4.setObjectName("textBrowser_4") 
 
         self.lcdNumberDegree = QtWidgets.QLCDNumber(Dialog)
         self.lcdNumberDegree.setGeometry(QtCore.QRect(100, 240, 51, 41))
