@@ -1,0 +1,5 @@
+<launch>
+<node pkg="turtlesim" type="turtlesim_node" name="Turtlesim"/>
+<node pkg="Coursework1" type="Vaccum_cleaner.py" name="vaccum_cleaner_single_Node"/>
+<node pkg="rqt_graph" type="rqt_graph" name="Graph"/>
+</launch>
