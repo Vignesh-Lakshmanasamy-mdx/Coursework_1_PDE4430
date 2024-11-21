@@ -12,6 +12,7 @@ x_value=0
 y_value=0
 deg=0
 
+number_of_robots=0
 
 def posecallback(pose_message):
     global x_value,y_value,deg
@@ -24,10 +25,6 @@ def main():
 
     rospy.init_node('Turtlesim_Vaccum_cleaner',anonymous=True)
 
-    global cmd_vel_pub
-    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
-    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
-
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
@@ -37,10 +34,10 @@ def main():
 
     rospy.spin()
 
-def forward(value):
+def forward(value,turtlename):
     twist=Twist()
     twist.linear.x=value
-    cmd_vel_pub.publish(twist)
+    turtlename.publish(twist)
     rospy.sleep(2)
 
 def rotate_deg(rotate):
@@ -55,17 +52,37 @@ def kill():
     kill_turtle = rospy.ServiceProxy('kill', Kill)
     kill_turtle("turtle1")
 
-def spawn():
+def spawn(x,y,name):
     rospy.wait_for_service('spawn')
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
-    add_turtle(0.5,0.5,0.0,"turtle1")
-
+    add_turtle(x,y,0,name)
+    rospy.Publisher(f'/{name}/cmd_vel',Twist,queue_size=10)
     
 def func_reset():
     rospy.wait_for_service('reset')
     reset_turtle = rospy.ServiceProxy('reset', Empty)
     reset_turtle()       
 
+def Run_robots():
+    kill()
+    spawn(0.5,0.5,"turtle1")
+    spawn(6,0.5,"turtle2")
+    spawn(0.5,6,"turtle3")
+    spawn(6,6,"turtle4")
+
+    turtle1_cmd_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+    turtle2_cmd_pub=rospy.Publisher('/turtle2/cmd_vel',Twist,queue_size=10)
+    turtle3_cmd_pub=rospy.Publisher('/turtle3/cmd_vel',Twist,queue_size=10)    
+    turtle4_cmd_pub=rospy.Publisher('/turtle4/cmd_vel',Twist,queue_size=10)
+    rospy.sleep(2)
+    forward(4.5,turtle1_cmd_pub)
+    forward(4.5,turtle2_cmd_pub)
+    forward(4.5,turtle3_cmd_pub)
+    forward(4.5,turtle4_cmd_pub)
+
+
+def Five_robots():
+    print("hai")
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'task5.ui'
@@ -110,6 +127,18 @@ class Ui_Dialog(object):
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        self.comboBox.currentIndexChanged.connect(self.number_of_cleaners)
+        self.pushButton_3.clicked.connect(Run_robots)
+        self.pushButton_5.clicked.connect(func_reset)
+
+    def number_of_cleaners(self,index):
+        global number_of_robots
+        if index==0:
+            number_of_robots=4
+        elif index==1:
+            number_of_robots=5
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate

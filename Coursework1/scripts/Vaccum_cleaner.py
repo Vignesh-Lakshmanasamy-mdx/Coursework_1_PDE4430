@@ -60,15 +60,44 @@ def spawn():
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
     add_turtle(0.5,0.5,0.0,"turtle1")
 
+def wall_detection():
+    if x_value<=1 or x_value>=10 or y_value<=1 or y_value>=10:
+        return True
+    return False
+
+def avoid_wall():
+    twist=Twist()
+    if wall_detection():
+        if deg==0:
+            rotate_deg(1.57)
+            twist.linear.x=0.5
+            cmd_vel_pub.publish(twist)
+            rospy.sleep(1)
+            rotate_deg(3.14)
+            
+        else:
+            rotate_deg(1.57)
+            twist.linear.x=0.5
+            cmd_vel_pub.publish(twist)
+            rospy.sleep(1)
+            rotate_deg(0)            
+            
+
 def cycle():
     forward(10)
+    """
     rotate_deg(1.57)
     forward(0.5)
     rotate_deg(3.14)
+    """
+    avoid_wall()
     forward(10)
+    """
     rotate_deg(1.57)   
     forward(0.5)
     rotate_deg(0)
+    """
+    avoid_wall()
     
 
 def one_cleaner():
