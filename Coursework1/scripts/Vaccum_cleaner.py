@@ -8,18 +8,19 @@ import sys,math
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
 
+#global variable
 x_value=0
 y_value=0
 deg=0
 
-
+#getting the position
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x
     y_value=pose_message.y
     deg=pose_message.theta 
 
-
+#starting the main function
 def main():
 
     rospy.init_node('Turtlesim_Vaccum_cleaner',anonymous=True)
@@ -37,12 +38,14 @@ def main():
 
     rospy.spin()
 
+#forward funtion
 def forward(value):
     twist=Twist()
     twist.linear.x=value
     cmd_vel_pub.publish(twist)
     rospy.sleep(2)
 
+#rotation function using teleportation
 def rotate_deg(rotate):
     global x_value,y_value
     rospy.wait_for_service('turtle1/teleport_absolute')
@@ -50,39 +53,42 @@ def rotate_deg(rotate):
     tele_turtle(x_value,y_value,rotate)
     rospy.sleep(1)
 
+
 def kill():
     rospy.wait_for_service('kill')
     kill_turtle = rospy.ServiceProxy('kill', Kill)
     kill_turtle("turtle1")
+
 
 def spawn():
     rospy.wait_for_service('spawn')
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
     add_turtle(0.5,0.5,0.0,"turtle1")
 
+#wall_detection funtion
 def wall_detection():
-    if x_value<=1 or x_value>=10 or y_value<=1 or y_value>=10:
+    if x_value<=1 or x_value>=10 or y_value<=1 or y_value>=10: #seting the boundary
         return True
     return False
 
 def avoid_wall():
     twist=Twist()
-    if wall_detection():
-        if deg==0:
+    if wall_detection():#if true
+        if deg==0: #checking the current deg of the turtle if 0
             rotate_deg(1.57)
             twist.linear.x=0.5
             cmd_vel_pub.publish(twist)
             rospy.sleep(1)
             rotate_deg(3.14)
             
-        else:
+        else: 
             rotate_deg(1.57)
             twist.linear.x=0.5
             cmd_vel_pub.publish(twist)
             rospy.sleep(1)
             rotate_deg(0)            
             
-
+#hard coding the motion for 1 cycle
 def cycle():
     forward(10)
     """
@@ -99,12 +105,13 @@ def cycle():
     """
     avoid_wall()
     
-
+#one complete working 
 def one_cleaner():
     kill()
     spawn()
     rospy.sleep(1)
-    
+
+    #hard coding the number of cycle 
     for count in range(10):
         cycle()
     forward(10)
@@ -150,7 +157,7 @@ class Ui_Dialog(object):
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
+        #assignning the function for push button
         self.Start_the_1_cleaner.clicked.connect(one_cleaner)
         self.pushButton_5.clicked.connect(func_reset)
 

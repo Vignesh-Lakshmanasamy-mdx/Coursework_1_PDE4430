@@ -7,12 +7,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys,math
 from std_srvs.srv import Empty
 
+#global variables
 x_value=0
 y_value=0
 deg=0
 cmd_vel_controller=1.0
 index=0
 
+#getting the pose values
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x
@@ -40,18 +42,18 @@ def main():
 
 
 
-
+#forward function
 def forward():
     global x_value,y_value,deg,cmd_vel_controller,index
     twist=Twist()
     
-    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8):
+    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8): #setting the boundary condition
         twist.linear.x=cmd_vel_controller
         cmd_vel_pub.publish(twist)
     else:
-        if index==0:
+        if index==0: #got to rotation function condition
             change_angle(0)
-        else:
+        else: #go to  uturn 
             while True:
                 for pulse in range(32):
                     twist.angular.z=1.0
@@ -64,22 +66,26 @@ def forward():
                 cmd_vel_pub.publish(twist)
                 break
             rospy.sleep(1)
+
+ #stop function           
 def stop_the_turtle():
     twist=Twist()
     twist.linear.x=0
     cmd_vel_pub.publish(twist)
 
+#reverse function
 def reverse():
 
     twist=Twist()
     global x_value,y_value,deg,cmd_vel_controller
 
-    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8):
+    if (x_value>=3 and x_value<=8) and (y_value>=3 and y_value<=8): #boundary limits
         twist.linear.x=-(cmd_vel_controller)
         cmd_vel_pub.publish(twist)
     else:
-        if index==0:
+        if index==0: #go to rotation function
             change_angle(0)
+            #no u turn function for reverse
     
 def change_angle(value):
     global radian_value,cmd_vel_controller,x_value,y_value,deg,index
@@ -91,7 +97,8 @@ def change_angle(value):
 
     rate=rospy.Rate(10)
     
-    if index==0:
+    if index==0: #rotation function
+        #hard coding the values for angle to rotate when it cross the boundary limit
         if x_value<3:
             radian_value=0
         elif x_value>8:
@@ -112,7 +119,7 @@ def change_angle(value):
                 twist.angular.z=0.5432*theta_diff/abs(theta_diff)
                 cmd_vel_pub.publish(twist)
         
-            else:
+            else: 
                 twist.angular.z=0.0
                 twist.linear.x=3.0
                 cmd_vel_pub.publish(twist)

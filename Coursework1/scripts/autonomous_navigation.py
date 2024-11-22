@@ -7,6 +7,7 @@ from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn
 import sys,math
 
+#global variables
 x_value=0
 y_value=0
 deg=0
@@ -14,12 +15,14 @@ x_t=0
 y_t=0
 theta_t=0
 
+#getting the Pose value from the turtlesim
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x
     y_value=pose_message.y
     deg=pose_message.theta 
 
+#main function initiate the subscriber and publisher 
 def main():
 
     rospy.init_node('Turtlesim_autonomous_navigation',anonymous=True)
@@ -37,18 +40,22 @@ def main():
 
     rospy.spin()
 
+#killing the existing turtle
 def kill():
     rospy.wait_for_service('kill')
     kill_turtle = rospy.ServiceProxy('kill', Kill)
     kill_turtle("turtle1")
 
+#spawning a new turtle
 def spawn(x,y,deg):
     deg=deg*3.14/180
     rospy.wait_for_service('spawn')
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
     add_turtle(x,y,deg,"turtle1")
 
+#getting the origin points
 def turtle_origin_points(x_origin,y_origin,theta_origin):
+    #if origin is invalid a default setting is given
     if x_origin<1 or x_origin>10:
         x_origin=5.54
     if y_origin<1 or y_origin>10:
@@ -59,8 +66,9 @@ def turtle_origin_points(x_origin,y_origin,theta_origin):
     kill()
     spawn(x_origin,y_origin,theta_origin)
 
+#getting the target points
 def turtle_target_points(x_target,y_target,theta_target):
-    
+    #if target is invalid a default setting is given
     global x_t,y_t,theta_t
     if x_target<1 or x_target>10:
         x_target=2
@@ -73,9 +81,11 @@ def turtle_target_points(x_target,y_target,theta_target):
     y_t=y_target
     theta_t=theta_target
 
+#calculating the distance between the points checked periodically by move_turtle funtion 
 def target_distance(x1,y1,x2,y2):
     return math.sqrt((x2-x1)**2+(y2-y1)**2)
 
+#calculating the angle between the points checked periodically by move_turtle funtion 
 def target_angle(x1,y1,x2,y2):
     return math.atan2(y2-y1,x2-x1)
 
@@ -123,7 +133,7 @@ def move_turtle():
     theta_diff=angle_on_reach_point-deg
     theta_diff=(theta_diff+math.pi)%(2*math.pi)-math.pi
 
-    while abs(theta_diff)>0.1:
+    while abs(theta_diff)>0.2:
         twist.angular.z=0.5*theta_diff/abs(theta_diff)
         cmd_vel_pub.publish(twist)
         theta_diff=(theta_t*0.01744)-deg
@@ -276,23 +286,24 @@ class Ui_Dialog(object):
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
+#comments for getting push button, origin and target inputs
         self.turtle_spawn.clicked.connect(self.accept_values)
         self.move_to_target.clicked.connect(self.Turtle_target_motion)
         self.Rest_turtle.clicked.connect(turtle_reset)
-    def accept_values(self):
+
+    def accept_values(self): # points are send to function only if we press the spawn button
         try :
             x_origin=float(self.origin_x.toPlainText())
             y_origin=float(self.Origin_y.toPlainText())
             theta_origin=float(self.origin_theta.toPlainText())
             
-            turtle_origin_points(x_origin,y_origin,theta_origin)
+            turtle_origin_points(x_origin,y_origin,theta_origin) # setting the entered points to origin function
             
             x_target=float(self.Target_x.toPlainText())
             y_target=float(self.Target_y.toPlainText())
             theta_target=float(self.Target_Theta.toPlainText())
             
-            turtle_target_points(x_target,y_target,theta_target)
+            turtle_target_points(x_target,y_target,theta_target) # setting the entered points to target function
         except:
             print("Enter a Valid Data")
 

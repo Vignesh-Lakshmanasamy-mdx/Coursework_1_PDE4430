@@ -8,6 +8,7 @@ from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
 import multiple_vacuum_cleaner
 
+#global variable
 x_value=0
 y_value=0
 deg=0
@@ -28,9 +29,9 @@ def main():
     cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
     pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
 
-    one_cleaner()
+    one_cleaner() # which contain the hard coded cycle
 
-    exit()
+    exit() #once done exit the program
 
 def forward(value):
     twist=Twist()
@@ -101,10 +102,11 @@ def cycle():
 
 def one_cleaner():
    
-    kill()
-    spawn()
+    kill() #kill the existing turtle
+    spawn() #create a new turtle
     rospy.sleep(1)
     
+    #repeat the cylce 
     for count in range(5):
         cycle()
     forward(5)

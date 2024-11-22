@@ -7,11 +7,12 @@ from turtlesim.msg import Pose
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
 
+#global variable
 x_value=0
 y_value=0
 deg=0
 
-
+#getting the pose
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x

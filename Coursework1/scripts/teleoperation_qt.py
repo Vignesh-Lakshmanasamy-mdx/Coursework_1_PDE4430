@@ -6,6 +6,8 @@ from turtlesim.msg import Pose
 import sys
 from std_srvs.srv import Empty
 import math
+
+#setting up all global variables
 x_value=0
 y_value=0
 deg=0
@@ -16,19 +18,21 @@ stop_button=0
 forward_value=0
 reverse_value=0
 
+#getting the Pose value from the turtlesim
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x
     y_value=pose_message.y
     deg=pose_message.theta 
 
+#main function initiate the subscriber and publisher 
 def main():
 
-    rospy.init_node('Turtlesim_teleoperation',anonymous=True)
+    rospy.init_node('Turtlesim_teleoperation',anonymous=True) #node initiation
 
     global cmd_vel_pub
-    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
-    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
+    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10) #publishing velocity
+    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback) #subscription to  pose
 
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
@@ -39,17 +43,19 @@ def main():
 
     rospy.spin()
 
+#function for forward motion
 def forward():
     global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button,forward_value,reverse_value
     twist=Twist()
     
-    if state==0:
+    if state==0: #Check box value
         twist.linear.x=cmd_vel_controller
         cmd_vel_pub.publish(twist)
-    else:
+    else:  #condition for allowing continuous motion
         forward_value=1
         reverse_value=0
-        
+
+#function for stopping the turtle     
 def stop():
     global stop_button
     stop_button=1
@@ -59,25 +65,27 @@ def stop():
     twist.angular.z = 0.0 
     cmd_vel_pub.publish(twist)
 
+#function for forward motion
 def reverse():
 
     twist=Twist()
     global x_value,y_value,deg,cmd_vel_controller,state,radian_value,stop_button,forward_value,reverse_value
-    if state==0:
+    if state==0: #Check box value
         twist.linear.x=-(cmd_vel_controller)
         cmd_vel_pub.publish(twist)
-    else:
+    else: #condition for allowing continuous motion
         forward_value=0
         reverse_value=1
 
+#function for rotation
 def change_angle(value):
     global radian_value,cmd_vel_controller,forward_value
-    deg_value=int(value)
-    radian_value=deg_value*0.0174533
+    deg_value=int(value) #value from direction control dial
+    radian_value=deg_value*0.0174533 #converting deg to radian
     twist=Twist()
     global deg
     #print(radian_value)
-    if state==0:
+    if state==0: #Check box value
         rate=rospy.Rate(10)
 
         while not rospy.is_shutdown():
@@ -96,7 +104,7 @@ def change_angle(value):
                 cmd_vel_pub.publish(twist)
                 break
             rate.sleep()
-    elif state!=0 and forward_value==1 and stop_button==0 :
+    elif state!=0 and forward_value==1 and stop_button==0 : # condition for forward continuous motion
         
         rate=rospy.Rate(10)
         while stop_button==0:
@@ -117,7 +125,7 @@ def change_angle(value):
                 break
             rate.sleep()
 
-    elif state!=0 and reverse_value==1 and stop_button==0 :        
+    elif state!=0 and reverse_value==1 and stop_button==0 :   # condition for reverese continuous motion    
         
         rate=rospy.Rate(10)
         while stop_button==0:
@@ -137,17 +145,19 @@ def change_angle(value):
                 cmd_vel_pub.publish(twist)
                 break
             rate.sleep()
-
+#dial value
 def change_speed(value):
     
     global cmd_vel_controller
     cmd_vel_controller=float(value)
 
+#check box for continuous motion
 def fun_checkbox(value):
     global state
     state=value
     print(state)
 
+#reset services
 def func_reset():
         rospy.wait_for_service('reset')
         reset_turtle = rospy.ServiceProxy('reset', Empty)
@@ -271,6 +281,7 @@ class Ui_Dialog(object):
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+        #Comment for push button, dial and velocity control
         self.pushButton.clicked.connect(forward)
         self.pushButton_2.clicked.connect(reverse)
         self.direction_control.valueChanged.connect(change_angle)
@@ -281,9 +292,11 @@ class Ui_Dialog(object):
         self.pushButton_3.clicked.connect(stop)
         self.pushButton_4.clicked.connect(func_reset)
 
+    #function for lcd speed control
     def dis_speed(self,value):
         self.lcdNumber_2.display(value)
 
+    #function for lcd angle control
     def dis_angle(self,value):
         self.lcdNumberDegree.display(value)
 
@@ -320,4 +333,4 @@ class Ui_Dialog(object):
 """
 
 if __name__ == "__main__":
-    main()
+    main() #calling the main function

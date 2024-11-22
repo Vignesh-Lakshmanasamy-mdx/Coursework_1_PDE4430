@@ -13,15 +13,16 @@ from Task5Cleaner2 import main as cleaner2
 from Task5Cleaner3 import main as cleaner3
 from Task5Cleaner4 import main as cleaner4
 """
-import Task5Cleaner1,Task5Cleaner2,Task5Cleaner3,Task5Cleaner4
-import concurrent.futures
+import Task5Cleaner1,Task5Cleaner2,Task5Cleaner3,Task5Cleaner4 #importing the python files
+import concurrent.futures #for simultaneous working of turtles - took the concept from google
 
+#global variable
 x_value=0
 y_value=0
 deg=0
-
 number_of_robots=0
 
+#getting the postion of turtle
 def posecallback(pose_message):
     global x_value,y_value,deg
     x_value=pose_message.x
@@ -71,9 +72,11 @@ def func_reset():
     reset_turtle = rospy.ServiceProxy('reset', Empty)
     reset_turtle()       
 
+#getting the turtles to the origin points 
 def Run_robots():
-    kill()
+    kill() #kill the default turtle
     
+    #spawning the new turtles
     spawn(0.5,0.5,"turtle1")
     spawn(6,0.5,"turtle2")
     spawn(0.5,6,"turtle3")
