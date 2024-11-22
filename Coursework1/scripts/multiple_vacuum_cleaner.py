@@ -7,6 +7,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys,math
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
+"""
+from Task5Cleaner1 import main as cleaner1
+from Task5Cleaner2 import main as cleaner2
+from Task5Cleaner3 import main as cleaner3
+from Task5Cleaner4 import main as cleaner4
+"""
 import Task5Cleaner1,Task5Cleaner2,Task5Cleaner3,Task5Cleaner4
 import concurrent.futures
 
@@ -75,10 +81,12 @@ def Run_robots():
     
     # Create a ThreadPoolExecutor to run functions concurrently - took from google
     with concurrent.futures.ThreadPoolExecutor() as executor:
+      
         executor.submit(Task5Cleaner1.main)
         executor.submit(Task5Cleaner2.main)
         executor.submit(Task5Cleaner3.main)
         executor.submit(Task5Cleaner4.main)
+       
     """
     Task5Cleaner1.main()
     Task5Cleaner2.main()

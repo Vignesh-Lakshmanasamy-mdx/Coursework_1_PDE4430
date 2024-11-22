@@ -29,7 +29,7 @@ def main():
 
     one_cleaner()
 
- 
+    exit()
 
 def forward(value):
     twist=Twist()

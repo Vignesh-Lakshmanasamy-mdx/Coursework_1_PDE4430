@@ -79,6 +79,7 @@ def avoid_wall():
 
 def cycle():
     forward(5)
+    
     """
     rotate_deg(1.57)
     forward(0.5)

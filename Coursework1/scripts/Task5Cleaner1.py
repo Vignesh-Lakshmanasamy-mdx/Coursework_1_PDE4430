@@ -29,8 +29,8 @@ def main():
 
     one_cleaner()
 
+    exit()
     
-
 def forward(value):
     twist=Twist()
     twist.linear.x=value
@@ -96,7 +96,7 @@ def cycle():
     
 
 def one_cleaner():
-    global cmd_vel_pub
+   
     kill()
     spawn()
     rospy.sleep(1)
@@ -112,3 +112,4 @@ def func_reset():
 
 if __name__ == "__main__":
     main()
+    

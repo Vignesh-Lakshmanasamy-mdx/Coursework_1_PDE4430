@@ -29,6 +29,7 @@ def main():
 
     one_cleaner()
 
+    exit()
 
 def forward(value):
     twist=Twist()
@@ -109,4 +110,4 @@ def func_reset():
 
 if __name__ == "__main__":
     main()
-
+    
