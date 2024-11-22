@@ -38,6 +38,8 @@ def forward(value):
     rospy.sleep(2)
 
 def rotate_deg(rotate):
+    pose_sub=rospy.Subscriber('/turtle4/pose',Pose,posecallback)
+    rospy.sleep(1)
     global x_value,y_value
     rospy.wait_for_service('turtle4/teleport_absolute')
     tele_turtle = rospy.ServiceProxy('turtle4/teleport_absolute', TeleportAbsolute)

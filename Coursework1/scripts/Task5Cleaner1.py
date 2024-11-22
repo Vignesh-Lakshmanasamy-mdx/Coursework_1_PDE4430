@@ -6,6 +6,7 @@ from turtlesim.msg import Pose
 
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
+import multiple_vacuum_cleaner
 
 x_value=0
 y_value=0
@@ -30,7 +31,7 @@ def main():
     one_cleaner()
 
     exit()
-    
+
 def forward(value):
     twist=Twist()
     twist.linear.x=value
@@ -38,6 +39,9 @@ def forward(value):
     rospy.sleep(2)
 
 def rotate_deg(rotate):
+    
+    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
+    rospy.sleep(1)
     global x_value,y_value
     rospy.wait_for_service('turtle1/teleport_absolute')
     tele_turtle = rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)

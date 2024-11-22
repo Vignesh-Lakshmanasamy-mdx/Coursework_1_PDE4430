@@ -29,7 +29,6 @@ def main():
 
     one_cleaner()
 
-    
 
 def forward(value):
     twist=Twist()
@@ -38,6 +37,8 @@ def forward(value):
     rospy.sleep(2)
 
 def rotate_deg(rotate):
+    pose_sub=rospy.Subscriber('/turtle3/pose',Pose,posecallback)
+    rospy.sleep(1)
     global x_value,y_value
     rospy.wait_for_service('turtle3/teleport_absolute')
     tele_turtle = rospy.ServiceProxy('turtle3/teleport_absolute', TeleportAbsolute)
