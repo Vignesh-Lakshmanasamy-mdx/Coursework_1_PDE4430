@@ -29,3 +29,40 @@ chmod +x Task5Cleaner4.py
 Above commands are to make the python program executable
 
 step 5: 
+
+
+To run the Task follow the below comments
+
+->Task1 - Teleoperation using the keyboard, with an option to change movement speed
+
+roslaunch Coursework1 teleoperation.launch
+
+->Task2 - Autonomous Navigation
+
+roslaunch Coursework1 autonomous_navigation.launch
+ 
+->Task3 - Avoid wall collision
+
+roslaunch Coursework1 avoid_wall.launch
+
+->Task4 - Vacuum cleaning behaviour
+
+roslaunch Coursework1 vaccum_cleaner.launch
+
+->Task5 - Multiple turtle Vacuum cleaning behaviour
+
+roslaunch Coursework1 multipleturtle.launch
+
+
+Note : if you have not installed pyqt ->sudo apt-get install python3-pyqt5 
+
+
+Task working description:
+
+Task1 : Teleoperation 
+
+demostration Video link : https://youtu.be/dekssTNoz0Q
+![Screenshot 2024-11-23 000130](https://github.com/user-attachments/assets/ce09ae03-2e7b-4d92-bc22-4e713062506f)
+
+
+
