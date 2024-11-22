@@ -24,12 +24,12 @@ def main():
     rospy.init_node('Turtlesim_Vaccum_cleaner',anonymous=True)
 
     global cmd_vel_pub
-    cmd_vel_pub=rospy.Publisher('/turtle3/cmd_vel',Twist,queue_size=10)
-    pose_sub=rospy.Subscriber('/turtle3/pose',Pose,posecallback)
+    cmd_vel_pub=rospy.Publisher('/turtle4/cmd_vel',Twist,queue_size=10)
+    pose_sub=rospy.Subscriber('/turtle4/pose',Pose,posecallback)
 
     one_cleaner()
 
-    rospy.spin()
+ 
 
 def forward(value):
     twist=Twist()
@@ -39,23 +39,23 @@ def forward(value):
 
 def rotate_deg(rotate):
     global x_value,y_value
-    rospy.wait_for_service('turtle3/teleport_absolute')
-    tele_turtle = rospy.ServiceProxy('turtle3/teleport_absolute', TeleportAbsolute)
+    rospy.wait_for_service('turtle4/teleport_absolute')
+    tele_turtle = rospy.ServiceProxy('turtle4/teleport_absolute', TeleportAbsolute)
     tele_turtle(x_value,y_value,rotate)
     rospy.sleep(1)
 
 def kill():
     rospy.wait_for_service('kill')
     kill_turtle = rospy.ServiceProxy('kill', Kill)
-    kill_turtle("turtle3")
+    kill_turtle("turtle4")
 
 def spawn():
     rospy.wait_for_service('spawn')
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
-    add_turtle(0.5,6,0.0,"turtle3")
+    add_turtle(6,6,0.0,"turtle4")
 
 def wall_detection():
-    if x_value<=1 or x_value>=4.5 or y_value<=1 or y_value>=10:
+    if x_value<=6.5 or x_value>=10 or y_value<=6 or y_value>=10:
         return True
     return False
 
@@ -78,14 +78,14 @@ def avoid_wall():
             
 
 def cycle():
-    forward(5)
+    forward(4.5)
     """
     rotate_deg(1.57)
     forward(0.5)
     rotate_deg(3.14)
     """
     avoid_wall()
-    forward(5)
+    forward(4.5)
     """
     rotate_deg(1.57)   
     forward(0.5)
@@ -101,11 +101,11 @@ def one_cleaner():
     
     for count in range(4):
         cycle()
-    forward(5)
+    forward(4.5)
     avoid_wall()
-    forward(5)
+    forward(4.5)
     print(x_value,y_value,deg)
-    
+
 def func_reset():
     rospy.wait_for_service('reset')
     reset_turtle = rospy.ServiceProxy('reset', Empty)
@@ -113,3 +113,4 @@ def func_reset():
 
 if __name__ == "__main__":
     main()
+

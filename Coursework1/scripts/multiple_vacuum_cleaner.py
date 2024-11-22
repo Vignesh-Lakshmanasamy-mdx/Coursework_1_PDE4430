@@ -7,7 +7,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys,math
 from std_srvs.srv import Empty
 from turtlesim.srv import Kill,Spawn,TeleportAbsolute
-import multiprocessing
+import Task5Cleaner1,Task5Cleaner2,Task5Cleaner3,Task5Cleaner4
+import concurrent.futures
 
 x_value=0
 y_value=0
@@ -34,7 +35,7 @@ def main():
     sys.exit(app.exec_())
 
     rospy.spin()
-
+"""
 def forward(value,turtlename):
     twist=Twist()
     twist.linear.x=value
@@ -47,7 +48,7 @@ def rotate_deg(rotate):
     tele_turtle = rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)
     tele_turtle(x_value,y_value,rotate)
     rospy.sleep(1)
-
+"""
 def kill():
     rospy.wait_for_service('kill')
     kill_turtle = rospy.ServiceProxy('kill', Kill)
@@ -66,25 +67,27 @@ def func_reset():
 
 def Run_robots():
     kill()
+    
     spawn(0.5,0.5,"turtle1")
     spawn(6,0.5,"turtle2")
     spawn(0.5,6,"turtle3")
     spawn(6,6,"turtle4")
-
-    turtle1_cmd_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
-    turtle2_cmd_pub=rospy.Publisher('/turtle2/cmd_vel',Twist,queue_size=10)
-    turtle3_cmd_pub=rospy.Publisher('/turtle3/cmd_vel',Twist,queue_size=10)    
-    turtle4_cmd_pub=rospy.Publisher('/turtle4/cmd_vel',Twist,queue_size=10)
-    rospy.sleep(2)
     
-    forward(4.5,turtle1_cmd_pub)
-    forward(4.5,turtle2_cmd_pub)
-    forward(4.5,turtle3_cmd_pub)
-    forward(4.5,turtle4_cmd_pub)
+    # Create a ThreadPoolExecutor to run functions concurrently - took from google
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(Task5Cleaner1.main)
+        executor.submit(Task5Cleaner2.main)
+        executor.submit(Task5Cleaner3.main)
+        executor.submit(Task5Cleaner4.main)
+    """
+    Task5Cleaner1.main()
+    Task5Cleaner2.main()
+    Task5Cleaner3.main()
+    Task5Cleaner4.main()
+     """ 
+    rospy.sleep(2)
 
 
-def Five_robots():
-    print("hai")
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'task5.ui'
@@ -138,8 +141,7 @@ class Ui_Dialog(object):
         global number_of_robots
         if index==0:
             number_of_robots=4
-        elif index==1:
-            number_of_robots=5
+        
 
 
     def retranslateUi(self, Dialog):

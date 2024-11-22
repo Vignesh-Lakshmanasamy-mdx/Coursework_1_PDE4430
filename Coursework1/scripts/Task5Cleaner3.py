@@ -24,12 +24,12 @@ def main():
     rospy.init_node('Turtlesim_Vaccum_cleaner',anonymous=True)
 
     global cmd_vel_pub
-    cmd_vel_pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
-    pose_sub=rospy.Subscriber('/turtle1/pose',Pose,posecallback)
+    cmd_vel_pub=rospy.Publisher('/turtle3/cmd_vel',Twist,queue_size=10)
+    pose_sub=rospy.Subscriber('/turtle3/pose',Pose,posecallback)
 
     one_cleaner()
 
-    rospy.spin()
+    
 
 def forward(value):
     twist=Twist()
@@ -39,20 +39,20 @@ def forward(value):
 
 def rotate_deg(rotate):
     global x_value,y_value
-    rospy.wait_for_service('turtle1/teleport_absolute')
-    tele_turtle = rospy.ServiceProxy('turtle1/teleport_absolute', TeleportAbsolute)
+    rospy.wait_for_service('turtle3/teleport_absolute')
+    tele_turtle = rospy.ServiceProxy('turtle3/teleport_absolute', TeleportAbsolute)
     tele_turtle(x_value,y_value,rotate)
     rospy.sleep(1)
 
 def kill():
     rospy.wait_for_service('kill')
     kill_turtle = rospy.ServiceProxy('kill', Kill)
-    kill_turtle("turtle1")
+    kill_turtle("turtle3")
 
 def spawn():
     rospy.wait_for_service('spawn')
     add_turtle = rospy.ServiceProxy('spawn', Spawn)
-    add_turtle(0.5,0.5,0.0,"turtle1")
+    add_turtle(0.5,6,0.0,"turtle3")
 
 def wall_detection():
     if x_value<=1 or x_value>=4.5 or y_value<=1 or y_value>=10:
@@ -99,9 +99,12 @@ def one_cleaner():
     spawn()
     rospy.sleep(1)
     
-    for count in range(5):
+    for count in range(4):
         cycle()
     forward(5)
+    avoid_wall()
+    forward(5)
+    print(x_value,y_value,deg)
     
 def func_reset():
     rospy.wait_for_service('reset')
